@@ -20,7 +20,9 @@ public class LoreArtBuilder {
             text.append("[");
             for(int col = 0; col < cols; col++) {
                 String texture = textureValues.get((row*cols)+col);
-                text.append("{color:\"white\",player:{properties:[{name:\"textures\",value:\"");
+                text.append("{color:\"white\",");
+                if(row != rows - 1) text.append("shadow_color:-1,");
+                text.append("player:{properties:[{name:\"textures\",value:\"");
                 text.append(texture);
                 text.append("\"}]}}");
                 if(col != cols - 1) text.append(",");
