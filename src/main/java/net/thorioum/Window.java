@@ -6,18 +6,26 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.prefs.Preferences;
 
 public class Window {
+    private static final String PREF_API_KEY = "mineskinApiKey";
+
     private JFrame frame;
     private JTextField apiKeyField;
     private JTextArea outputArea;
     private File selectedFile;
     private String lastTextOutput = "";
+    private final Preferences prefs;
+
     public Window() {
         System.setProperty("apple.awt.fileDialogForDirectories", "false");
         System.setProperty("apple.laf.useScreenMenuBar", "true");
 
-        frame = new JFrame("Lore Art Maker with MineSkin");
+        // Preferences node for this class/package
+        prefs = Preferences.userNodeForPackage(Window.class);
+
+        frame = new JFrame("Profile Lore Art Creator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
@@ -27,7 +35,11 @@ public class Window {
 
         JLabel apiLabel = new JLabel("MineSkin API Key:");
         apiKeyField = new JTextField(20);
-        apiKeyField.setText("msk_SW6W9ju8_Ab2gIAIAdDoo0b2QbScCzMN1jyzC_0yet6Hasa9KZp6y-ClpPsfOw9ybdpRPZfAF");
+
+        // Load saved API key (if any)
+        String savedKey = prefs.get(PREF_API_KEY, "");
+        apiKeyField.setText(savedKey);
+
         apiKeyField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
         JButton selectFileButton1 = new JButton("Select Image");
         JButton runButton = new JButton("Run");
@@ -52,14 +64,14 @@ public class Window {
         frame.add(scrollPane, BorderLayout.CENTER);
 
         selectFileButton1.addActionListener(this::onSelectFile);
-        runButton.addActionListener((e)->{
+        runButton.addActionListener((e) -> {
             try {
                 onRun(e);
             } catch (Exception e1) {
                 e1.printStackTrace();
             }
         });
-        copyButton.addActionListener((e)->{
+        copyButton.addActionListener((e) -> {
             StringSelection stringSelection = new StringSelection(lastTextOutput);
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(stringSelection, null);
@@ -81,7 +93,7 @@ public class Window {
         String file = dialog.getFile();
         String dir = dialog.getDirectory();
 
-        if (file == null) return null; // cancelled
+        if (file == null) return null;
 
         return new File(dir, file);
     }
@@ -93,11 +105,26 @@ public class Window {
             outputArea.append("Selected Image: " + file.getAbsolutePath() + "\n");
         }
     }
+
     private void onOutput(String text) {
         outputArea.append(text + "\n");
-        if(text.startsWith("[")) lastTextOutput = text;
+        if (text.startsWith("[")) lastTextOutput = text;
     }
+
     private void onRun(ActionEvent e) throws Exception {
-        ProfileLoreArtUtil.process(selectedFile,apiKeyField.getText(),this::onOutput);
+        String apiKey = apiKeyField.getText().trim();
+        if (apiKey.isEmpty()) {
+            onOutput("Please supply a valid api key for MineSkin!");
+            return;
+        }
+
+        prefs.put(PREF_API_KEY, apiKey);
+
+        if (selectedFile == null) {
+            onOutput("Please select an image file first!");
+            return;
+        }
+
+        ProfileLoreArtUtil.process(selectedFile, apiKey, this::onOutput);
     }
 }

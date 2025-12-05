@@ -28,14 +28,18 @@ public class ProfileLoreArtUtil {
         TiledImage tiledImage = new TiledImage(fullImage);
         int rows = tiledImage.getNumberOfRows();
         int cols = tiledImage.getNumberOfCols();
+
         if(processingThread != null) {
             outputWindow.accept("Busy processing your last request! Either restart the program or wait for the last task to complete.");
             return;
         }
+
+        //ugly code i know
         processingThread = new Thread(() -> {
+            List<String> textures = new ArrayList<>();
+
             try {
                 outputWindow.accept("[--------------------]\nDue to API Ratelimits, this will take some time to process.\nGiven the size of your image, you can expect this to take up to ~" + 3.1 * tiledImage.images.size() + " seconds");
-                List<String> textures = new ArrayList<>();
                 tiledImage.forEachRow((rowImages) -> {
                     for (BufferedImage image : rowImages) {
 
@@ -44,10 +48,22 @@ public class ProfileLoreArtUtil {
 
                             String encodedImage = asEncodedUrl(image);
                             if(imageTextureCache.containsKey(imageHash)) {
+
                                 textures.add(imageTextureCache.get(imageHash));
+                                outputWindow.accept(textures.size() + "/" + tiledImage.images.size());
+
                             } else {
-                                String skin = MineskinApiHelper.requestSkin(encodedImage,"LoreArt" + imageHash.substring(0,10), apiKey);
-                                JsonObject o = JsonParser.parseString(skin).getAsJsonObject();
+                                String skin = MineskinApiHelper.requestSkin(encodedImage, "LoreArt" + imageHash.substring(0, 10), apiKey);
+                                JsonObject o;
+
+                                try {
+                                    o = JsonParser.parseString(skin).getAsJsonObject();
+                                } catch (Exception e) {
+                                    System.out.println(skin);
+                                    e.printStackTrace();
+                                    continue;
+                                }
+
                                 if (o.get("success").getAsString().equals("true")) {
                                     String textureValue = o.getAsJsonObject("skin")
                                             .getAsJsonObject("texture")
@@ -55,11 +71,17 @@ public class ProfileLoreArtUtil {
                                             .get("value").getAsString();
 
                                     textures.add(textureValue);
+                                    outputWindow.accept(textures.size() + "/" + tiledImage.images.size());
+
                                     imageTextureCache.put(imageHash, textureValue);
+
+                                    Thread.sleep(3000);
+                                } else {
+                                    outputWindow.accept(skin);
                                 }
 
                                 //outputWindow.accept(skin);
-                                Thread.sleep(2850);
+
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
