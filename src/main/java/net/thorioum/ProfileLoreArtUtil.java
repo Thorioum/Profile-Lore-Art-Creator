@@ -42,10 +42,8 @@ public class ProfileLoreArtUtil {
                 outputWindow.accept("[--------------------]\nDue to API Ratelimits, this will take some time to process.\nGiven the size of your image, you can expect this to take up to ~" + 3.1 * tiledImage.images.size() + " seconds");
                 tiledImage.forEachRow((rowImages) -> {
                     for (BufferedImage image : rowImages) {
-                        outputWindow.accept("aa");
 
                         try {
-                            outputWindow.accept("bb");
                             String imageHash = hashImage(image);
 
                             String encodedImage = asEncodedUrl(image);
@@ -56,15 +54,11 @@ public class ProfileLoreArtUtil {
 
                             } else {
                                 String skin = MineskinApiHelper.requestSkin(encodedImage, "LoreArt" + imageHash.substring(0, 10), apiKey);
-                                outputWindow.accept("bb");
                                 JsonObject o;
 
                                 try {
-                                    outputWindow.accept("cc");
                                     o = JsonParser.parseString(skin).getAsJsonObject();
-                                    outputWindow.accept("dd");
                                 } catch (Exception e) {
-                                    outputWindow.accept("ee");
                                     System.out.println(skin);
                                     e.printStackTrace();
                                     continue;
@@ -86,7 +80,7 @@ public class ProfileLoreArtUtil {
                                     outputWindow.accept(skin);
                                 }
 
-                                outputWindow.accept(skin);
+                                //outputWindow.accept(skin);
 
                             }
                         } catch (Exception e) {
