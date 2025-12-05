@@ -2,6 +2,7 @@
 
 ---
 # How to Use
+- Be sure to have at least Java 17 installed on your system
 - Create a [MineSkin](https://mineskin.org/) account and obtain an api key
 - Download the [latest release](https://github.com/Thorioum/Profile-Lore-Art-Creator/releases/latest) of the program from the releases tab and simply run it.
 - - *Alternatively, you can build the program yourself by cloning this repository, and then running* ```gradlew build```.
